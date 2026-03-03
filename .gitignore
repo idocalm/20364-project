@@ -1,0 +1,4 @@
+*.md
+*.o
+*.exe
+lexer.yy.c

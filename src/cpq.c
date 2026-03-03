@@ -15,6 +15,8 @@ i32 main(i32 argc, char **argv) {
         
     i32 rc = 1;
 
+    LOG(SIGNATURE);
+
     if (argc != 2) {
         ERROR("usage: cpq <filename>.ou");
         return 1;

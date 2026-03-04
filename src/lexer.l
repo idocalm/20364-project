@@ -226,6 +226,10 @@ const char *lexer_text(void) {
     return yytext;
 }
 
+const char *lexer_line_preview(void) {
+    return line_preview;
+}
+
 i32 lexer_error_count(void) {
     return error_count;
 }

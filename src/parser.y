@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "lexer.h"
 #include "log.h"
@@ -87,6 +88,11 @@ declaration:
                 YYABORT;
             }
         }
+    | error TOKEN_SEMICOLON
+        {
+            yyerrok;
+            $$ = NULL;
+        }
     ;
 
 type:
@@ -123,6 +129,11 @@ stmt:
     | switch_stmt     { $$ = $1; }
     | break_stmt      { $$ = $1; }
     | stmt_block      { $$ = $1; }
+    | error TOKEN_SEMICOLON
+        {
+            yyerrok;
+            $$ = NULL;
+        }
     ;
 
 assignment_stmt:
@@ -133,6 +144,12 @@ assignment_stmt:
                 ERROR("out of memory while building assignment statement");
                 YYABORT;
             }
+        }
+    | TOKEN_ID TOKEN_ASSIGN error TOKEN_SEMICOLON
+        {
+            free($1);
+            yyerrok;
+            $$ = NULL;
         }
     ;
 
@@ -145,6 +162,11 @@ input_stmt:
                 YYABORT;
             }
         }
+    | TOKEN_INPUT TOKEN_LPAREN error TOKEN_RPAREN TOKEN_SEMICOLON
+        {
+            yyerrok;
+            $$ = NULL;
+        }
     ;
 
 output_stmt:
@@ -155,6 +177,11 @@ output_stmt:
                 ERROR("out of memory while building output statement");
                 YYABORT;
             }
+        }
+    | TOKEN_OUTPUT TOKEN_LPAREN error TOKEN_RPAREN TOKEN_SEMICOLON
+        {
+            yyerrok;
+            $$ = NULL;
         }
     ;
 
@@ -197,6 +224,12 @@ switch_stmt:
                 YYABORT;
             }
         }
+    | TOKEN_SWITCH TOKEN_LPAREN expression TOKEN_RPAREN TOKEN_LBRACE error TOKEN_RBRACE
+        {
+            free_ast_expression($3);
+            yyerrok;
+            $$ = NULL;
+        }
     ;
 
 caselist:
@@ -224,6 +257,11 @@ break_stmt:
                 YYABORT;
             }
         }
+    | TOKEN_BREAK error TOKEN_SEMICOLON
+        {
+            yyerrok;
+            $$ = NULL;
+        }
     ;
 
 stmt_block:
@@ -232,6 +270,15 @@ stmt_block:
             $$ = new_ast_statement_block($2);
             if ($$ == NULL) {
                 ERROR("out of memory while building block statement");
+                YYABORT;
+            }
+        }
+    | TOKEN_LBRACE error TOKEN_RBRACE
+        {
+            yyerrok;
+            $$ = new_ast_statement_block(NULL);
+            if ($$ == NULL) {
+                ERROR("out of memory while building recovered block statement");
                 YYABORT;
             }
         }
@@ -382,10 +429,22 @@ factor:
 
 void yyerror(const char *message) {
     const char *near_text = lexer_text();
+    const char *line_text = lexer_line_preview();
+    i32 width = 1;
+
     if (near_text != NULL && near_text[0] != '\0') {
-        ERROR("line %d:%d: syntax error: %s near '%s'", (int)lexer_line(), (int)lexer_column(), message, near_text);
+        width = (i32)strlen(near_text);
+    }
+    width = MAX(width, 1);
+
+    if (near_text != NULL && near_text[0] != '\0') {
+        ERROR("line %d:%d: %s near '%s'", (int)lexer_line(), (int)lexer_column(), message, near_text);
     } else {
-        ERROR("line %d:%d: syntax error: %s", (int)lexer_line(), (int)lexer_column(), message);
+        ERROR("line %d:%d: %s", (int)lexer_line(), (int)lexer_column(), message);
+    }
+    if (line_text != NULL) {
+        fprintf(stderr, "    %s\n", line_text);
+        lexer_print_caret_line(lexer_column(), width);
     }
     parse_error_count++;
 }

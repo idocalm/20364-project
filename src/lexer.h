@@ -12,6 +12,7 @@ i32 lexer_next(void);
 i32 lexer_line(void);
 i32 lexer_column(void);
 const char *lexer_text(void);
+const char *lexer_line_preview(void);
 i32 lexer_error_count(void);
 
 static inline void lexer_capture_preview(

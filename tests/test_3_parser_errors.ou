@@ -1,0 +1,6 @@
+a, b int;
+{
+    x = ;
+    if (x < 10
+        output(x)
+}

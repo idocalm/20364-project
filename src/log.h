@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdarg.h>
+#include <string.h>
 
 /* ANSI colors */
 #define LOG_COLOR_RESET  "\x1b[0m"
@@ -18,7 +19,12 @@ static inline void _log_timestamp(char *buf, size_t sz) {
 #if defined(_WIN32) // TODO
     localtime_s(&tmv, &t);
 #else
-    localtime_r(&t, &tmv);
+    struct tm *tmp = localtime(&t);
+    if (tmp != NULL) {
+        tmv = *tmp;
+    } else {
+        memset(&tmv, 0, sizeof(tmv));
+    }
 #endif
     strftime(buf, sz, "%Y-%m-%d %H:%M:%S", &tmv);
 }

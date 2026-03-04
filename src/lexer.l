@@ -81,6 +81,7 @@ static char *lexer_dup_text(const char *text) {
 %option yylineno
 %option noinput
 %option nounput
+%option never-interactive
 
 %x COMMENT
 

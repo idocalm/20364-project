@@ -2,6 +2,7 @@
 #include "quad_utils.h"
 #include "defs.h"
 #include "log.h"
+#include <stdlib.h>
 
 ///////////////// for emitting a general binary operation /////////////////
 

@@ -22,6 +22,7 @@ static i32 parse_error_count = 0;
 %}
 
 %define parse.error verbose
+%expect 1
 
 %union {
     char *text;

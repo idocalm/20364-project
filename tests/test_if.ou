@@ -1,0 +1,6 @@
+a,b: int;
+{
+  a = 1;
+  b = 2;
+  if (a < b) output(a); else output(b);
+}

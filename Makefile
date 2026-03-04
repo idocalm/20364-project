@@ -12,7 +12,7 @@ YACC_SRC := src/parser.y
 YACC_GEN_C := src/parser.tab.c
 YACC_GEN_H := src/parser.tab.h
 
-C_SRC := src/cpq.c src/compiler.c src/utils.c src/ast.c src/debug.c src/symbols.c src/semantics.c
+C_SRC := src/cpq.c src/compiler.c src/utils.c src/ast.c src/debug.c src/symbols.c src/semantics.c src/quad.c src/quad_utils.c
 SRC := $(C_SRC) $(YACC_GEN_C) $(LEX_GEN)
 
 OBJDIR := build/obj

@@ -19,3 +19,4 @@ typedef i32 b32;
 #define OU_SUFFIX ".ou"
 #define QUAD_SUFFIX "qud"
 #define SIGNATURE "--- Ido Calman, 2026a ---"
+#define DEBUG_PROGRESS 1

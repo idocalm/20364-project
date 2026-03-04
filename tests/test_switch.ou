@@ -1,0 +1,9 @@
+a: int;
+{
+  a = 2;
+  switch(a){
+    case 1: output(1);
+    case 2: output(2); break;
+    default: output(0);
+  }
+}

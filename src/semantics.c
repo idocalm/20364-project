@@ -3,10 +3,7 @@
 #include "log.h"
 #include "symbols.h"
 
-typedef struct semantic_context {
-    SymbolTable *symbols;
-    i32 error_count;
-} SemanticContext;
+
 
 static void raise_semantic_error(SemanticContext *ctx, const char *fmt, const char *name)
 {
@@ -158,11 +155,15 @@ static void check_declarations(SemanticContext *ctx, const AstDeclaration *decl)
     }
 }
 
-i32 semantic_check_program(const AstProgram *program)
+i32 semantic_check_program(const AstProgram *program, SymbolTable **out_symbols)
 {
     SemanticContext ctx;
     ctx.symbols = NULL;
     ctx.error_count = 0;
+
+    if (out_symbols != NULL) {
+        *out_symbols = NULL;
+    }
 
     if (program == NULL) {
         return 0;
@@ -177,6 +178,12 @@ i32 semantic_check_program(const AstProgram *program)
     check_declarations(&ctx, program->declarations);
     check_statement(&ctx, program->body);
 
-    free_symtable(ctx.symbols);
+    if (ctx.error_count == 0 && out_symbols != NULL) {
+        *out_symbols = ctx.symbols;
+        // pass the symbol table to the IR generator so we won't need to rebuild it
+    } else {
+        // if something failed it's ok to free it (no IR would be generated...)
+        free_symtable(ctx.symbols);
+    }
     return ctx.error_count;
 }

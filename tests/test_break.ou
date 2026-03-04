@@ -1,6 +1,7 @@
 a: int;
 a: float;
 {
+    break;
     b = 7;
     output(a + c);
 }

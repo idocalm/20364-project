@@ -1,7 +1,9 @@
 %{
+#include "parser.tab.h"
 #include "lexer.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "log.h"
@@ -48,6 +50,16 @@ static void lexer_report_bad_char(i8 c) {
     }
     lexer_print_highlight((i32)yylineno, token_col, message, (const char *)bad_char_text);
     error_count++;
+}
+
+static char *lexer_dup_text(const char *text) {
+    size_t len = strlen(text);
+    char *copy = (char *)malloc(len + 1);
+    if (copy == NULL) {
+        return NULL;
+    }
+    memcpy(copy, text, len + 1);
+    return copy;
 }
 
 #define YY_USER_ACTION                                  \
@@ -118,9 +130,33 @@ FLOATNUM    {DIGIT}+"."{DIGIT}*
 ";"                     { return TOKEN_SEMICOLON; }
 "="                     { return TOKEN_ASSIGN; }
 
-{FLOATNUM}              { return TOKEN_NUM_FLOAT; }
-{INTNUM}                { return TOKEN_NUM_INT; }
-{ID}                    { return TOKEN_ID; }
+{FLOATNUM}              {
+                            yylval.text = lexer_dup_text(yytext);
+                            if (yylval.text == NULL) {
+                                ERROR("out of memory while scanning float literal");
+                                error_count++;
+                                return 0;
+                            }
+                            return TOKEN_NUM_FLOAT;
+                        }
+{INTNUM}                {
+                            yylval.text = lexer_dup_text(yytext);
+                            if (yylval.text == NULL) {
+                                ERROR("out of memory while scanning integer literal");
+                                error_count++;
+                                return 0;
+                            }
+                            return TOKEN_NUM_INT;
+                        }
+{ID}                    {
+                            yylval.text = lexer_dup_text(yytext);
+                            if (yylval.text == NULL) {
+                                ERROR("out of memory while scanning identifier");
+                                error_count++;
+                                return 0;
+                            }
+                            return TOKEN_ID;
+                        }
 
 "/*"                    {
                             comment_start_line = (i32)yylineno;
@@ -139,7 +175,7 @@ FLOATNUM    {DIGIT}+"."{DIGIT}*
                             );
                             error_count++;
                             BEGIN(INITIAL);
-                            return TOKEN_EOF;
+                            return 0;
                         }
 
 [ \t\r]+                { }
@@ -149,7 +185,7 @@ FLOATNUM    {DIGIT}+"."{DIGIT}*
                             lexer_report_bad_char((i8)yytext[0]);
                         }
 
-<<EOF>>                 { return TOKEN_EOF; }
+<<EOF>>                 { return 0; }
 
 %%
 

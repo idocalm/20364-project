@@ -1,28 +1,31 @@
 #include "compiler.h"
-#include "lexer.h"
+#include "ast.h"
+#include "parser.h"
+#include "debug.h"
 
 #include <stdio.h>
 
+#define DEBUG 1
+
 int compile_file(FILE *in, FILE *out, const char *input_path) {
-    i32 token = TOKEN_EOF;
-    i32 lex_errors = 0;
+    AstProgram *program = NULL;
+    i32 parse_errors = 0;
 
-    if (!lexer_begin(in)) {
-        ERROR("failed to initialize lexer");
+    if (parser_parse(in, &program, &parse_errors) != 0) {
+        ERROR("found %d parsing/lexical error(s) in '%s'", (int)parse_errors, input_path);
         return 1;
     }
 
-    do {
-        token = lexer_next();
-    } while (token != TOKEN_EOF);
+    if (DEBUG)
+        debug_print_ast(NULL, program);
 
-    lex_errors = lexer_error_count();
-    lexer_end();
-    if (lex_errors > 0) {
-        ERROR("found %d lexical error(s) in '%s'", (i32)lex_errors, input_path);
+    if (fprintf(out, "HALT\n") < 0)
+    {
+        ERROR("failed writing output");
+        free_ast_program(program);
         return 1;
     }
 
+    free_ast_program(program);
     return 0;
 }
-

@@ -7,20 +7,28 @@ FLEX := flex
 LEX_SRC := src/lexer.l
 LEX_GEN := src/lexer.yy.c
 
-C_SRC := src/cpq.c src/compiler.c src/utils.c
-SRC := $(C_SRC) $(LEX_GEN)
+BISON := bison
+YACC_SRC := src/parser.y
+YACC_GEN_C := src/parser.tab.c
+YACC_GEN_H := src/parser.tab.h
+
+C_SRC := src/cpq.c src/compiler.c src/utils.c src/ast.c src/debug.c
+SRC := $(C_SRC) $(YACC_GEN_C) $(LEX_GEN)
 
 OBJDIR := build/obj
 OBJ := $(patsubst src/%.c,$(OBJDIR)/%.o,$(SRC))
 
 .PHONY: all clean
 
-all: $(LEX_GEN) cpq.exe
+all: $(YACC_GEN_C) $(YACC_GEN_H) $(LEX_GEN) cpq.exe
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
 
-$(LEX_GEN): $(LEX_SRC)
+$(YACC_GEN_C) $(YACC_GEN_H): $(YACC_SRC)
+	$(BISON) -d -o $(YACC_GEN_C) $(YACC_SRC)
+
+$(LEX_GEN): $(LEX_SRC) $(YACC_GEN_H)
 	$(FLEX) -o $@ $<
 
 $(OBJDIR)/%.o: src/%.c | $(OBJDIR)
@@ -31,4 +39,4 @@ cpq.exe: $(OBJ)
 
 clean:
 	rm -rf build
-	rm -f src/lexer.yy.c cpq.exe
+	rm -f src/lexer.yy.c src/parser.tab.c src/parser.tab.h cpq.exe

@@ -1,4 +1,6 @@
 a, b: float; 
+c: int;
+
 { 
     input(a); 
     input(b); 

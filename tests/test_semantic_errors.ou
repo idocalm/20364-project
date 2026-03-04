@@ -1,0 +1,6 @@
+a: int;
+a: float;
+{
+    b = 7;
+    output(a + c);
+}

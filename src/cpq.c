@@ -5,6 +5,32 @@
 #include <stdlib.h>
 #include <string.h>
 
+b8 debug_progress = false;
+
+static b8 parse_args(i32 argc, char **argv, char **out_input_path) {
+    i32 i = 0;
+    char *input_path = NULL;
+
+    for (i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--debug") == 0) {
+            debug_progress = true;
+            continue;
+        }
+
+        if (argv[i][0] == '-') {
+            return false;
+        }
+
+        if (input_path != NULL) {
+            return false;
+        }
+        input_path = argv[i];
+    }
+
+    *out_input_path = input_path;
+    return input_path != NULL;
+}
+
 i32 main(i32 argc, char **argv) {
     char *input_path;
     char *output_path = NULL;
@@ -16,12 +42,12 @@ i32 main(i32 argc, char **argv) {
 
     LOG(SIGNATURE);
 
-    if (argc != 2) {
-        ERROR("usage: cpq <filename>.ou");
+    if (!parse_args(argc, argv, &input_path)) {
+        ERROR("usage: cpq [--debug] <filename>.ou");
         return 1;
     }
+    LOG("DEBUG MODE [--debug]: %s", debug_progress ? "ENABLED" : "DISABLED");
 
-    input_path = argv[1];
     if (!has_ou_suffix(input_path)) {
         ERROR("input file must have .ou suffix");
         return 1;

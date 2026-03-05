@@ -417,7 +417,7 @@ cleanup:
         fclose(tmp_file);
     }
 
-    if (tmp_path != NULL && !DEBUG_PROGRESS)
+    if (tmp_path != NULL && !debug_progress)
     {
         remove(tmp_path);
     }

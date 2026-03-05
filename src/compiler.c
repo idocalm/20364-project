@@ -18,7 +18,7 @@ int compile_file(FILE *in, FILE *out, const char *input_path) {
         return 1;
     }
 
-    if (DEBUG_PROGRESS)
+    if (debug_progress)
         debug_print_ast(NULL, program);
 
     semantic_errors = semantic_check_program(program, &symbols);

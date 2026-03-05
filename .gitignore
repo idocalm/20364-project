@@ -4,3 +4,5 @@
 *.yy.c
 *.tab.c
 *.tab.h
+*.qud
+*.qud.tmp

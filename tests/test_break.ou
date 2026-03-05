@@ -1,7 +1,8 @@
 a: int;
-a: float;
+b: int;
 {
+    a = 2;
     break;
     b = 7;
-    output(a + c);
+    output(a + b);
 }

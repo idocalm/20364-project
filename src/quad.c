@@ -226,7 +226,9 @@ i32 quad_first_stage(FILE *tmp_out, const AstProgram *program, SymbolTable *symb
     if (!ctx.error)
     {
         // Add a single HALT instruction at the end of a valid program
+        // also sign
         quad_emitf(&ctx, "HALT\n");
+        quad_emitf(&ctx, SIGNATURE);
     }
 
     return ctx.error ? 1 : 0;

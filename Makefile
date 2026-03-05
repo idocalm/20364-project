@@ -1,4 +1,4 @@
-SHELL := /bin/sh
+SHELL := /usr/bin/sh
 
 CC := gcc
 CFLAGS := -std=c11 -Wall -Wextra -Wpedantic -O2
@@ -29,7 +29,7 @@ $(YACC_GEN_C) $(YACC_GEN_H): $(YACC_SRC)
 	$(BISON) -d -o $(YACC_GEN_C) $(YACC_SRC)
 
 $(LEX_GEN): $(LEX_SRC) $(YACC_GEN_H)
-	$(FLEX) -o $@ $<
+	$(FLEX) -o $(LEX_GEN) $(LEX_SRC)
 
 $(OBJDIR)/%.o: src/%.c | $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@

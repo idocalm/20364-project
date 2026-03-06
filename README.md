@@ -29,6 +29,8 @@ A few major decisions I made in designing the compiler:
 
 ## How to build and run
 
+> After talking to Gadi I made the Makefile for Linux:
+
 I added a `Makefile`, so you can run:
 
 ```
@@ -36,12 +38,7 @@ make clean
 make
 ```
 
-You do need to have bison and flex installed. I used **MSYS2** on my windows MinGW64 environment. 
-After installing MSYS2, open the **MSYS2 MinGW64** terminal and install the required tools:
-
-`pacman -S mingw-w64-x86_64-toolchain flex bison make`
-
-Then you can run `make` (and `make clean`).
+make sure you have bison and flex installed in your WSL (you can use apt get)
 
 
 ### debug mode

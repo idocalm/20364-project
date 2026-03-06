@@ -3,12 +3,58 @@
 #include "log.h"
 #include "symbols.h"
 
-
-
 static void raise_semantic_error(SemanticContext *ctx, const char *fmt, const char *name)
 {
-    ERROR(fmt, name);
+    ERROR(fmt, name ? name : "");
     ctx->error_count++;
+}
+
+static b8 does_resolve_to_int(SemanticContext *ctx, const AstExpression *expr)
+{
+    SymbolEntry *entry = NULL;
+
+    if (expr == NULL) {
+        return false;
+    }
+
+    switch (expr->kind) {
+        case AST_EXPR_ID:
+            entry = symtable_find(ctx->symbols, expr->as.identifier);
+            return entry && entry->type == AST_TYPE_INT;
+        case AST_EXPR_INT_LITERAL:
+            return true;
+        case AST_EXPR_FLOAT_LITERAL:
+            return false;
+        case AST_EXPR_CAST_INT: // cast<<int>> would result in an integer eventually
+            return true;
+        case AST_EXPR_CAST_FLOAT:
+            return false;
+        case AST_EXPR_NOT:
+            return true;
+        case AST_EXPR_BINARY:
+            switch (expr->as.binary.op) {
+                case AST_BINOP_ADD:
+                case AST_BINOP_SUB:
+                case AST_BINOP_MUL:
+                case AST_BINOP_DIV:
+                    return does_resolve_to_int(ctx, expr->as.binary.left) && does_resolve_to_int(ctx, expr->as.binary.right);
+                case AST_BINOP_OR:
+                case AST_BINOP_AND:
+                case AST_BINOP_EQ:
+                case AST_BINOP_NE:
+                case AST_BINOP_LT:
+                case AST_BINOP_GT:
+                case AST_BINOP_GE:
+                case AST_BINOP_LE:
+                    return true;
+            }
+            break;
+
+        default:
+            break;
+    }
+
+    return false;
 }
 
 static void check_expression(SemanticContext *ctx, const AstExpression *expr)
@@ -54,13 +100,15 @@ static void check_statement_list(SemanticContext *ctx, const AstStatement *stmt)
 static void check_statement(SemanticContext *ctx, const AstStatement *stmt)
 {
     const AstCase *case_it = NULL;
+    SymbolEntry *dst_entry = NULL;
     if (stmt == NULL)
         return;
 
     switch (stmt->kind) {
         case AST_STMT_ASSIGN:
             // validate that the operand were assigning to is defined in the symbol table
-            if (symtable_find(ctx->symbols, stmt->as.assign_stmt.identifier) == NULL)
+            dst_entry = symtable_find(ctx->symbols, stmt->as.assign_stmt.identifier);
+            if (dst_entry == NULL)
             {
                 raise_semantic_error(
                     ctx,
@@ -69,6 +117,16 @@ static void check_statement(SemanticContext *ctx, const AstStatement *stmt)
             }
             // also validate that the expression itself follows the semantic rules
             check_expression(ctx, stmt->as.assign_stmt.expression);
+
+            // if the destination is an integer, we need to make sure the assigne type is an int
+            // int = float is not legal
+            if (dst_entry != NULL && dst_entry->type == AST_TYPE_INT && !does_resolve_to_int(ctx, stmt->as.assign_stmt.expression))
+            {
+                raise_semantic_error(
+                    ctx,
+                    "semantic error: cannot assign float expression to int identifier '%s'",
+                    stmt->as.assign_stmt.identifier);
+            }
             break;
 
         case AST_STMT_INPUT:
@@ -103,6 +161,11 @@ static void check_statement(SemanticContext *ctx, const AstStatement *stmt)
         case AST_STMT_SWITCH:
             // validate the expression follows the rules
             check_expression(ctx, stmt->as.switch_stmt.expression);
+            if (!does_resolve_to_int(ctx, stmt->as.switch_stmt.expression))
+            {
+                raise_semantic_error(ctx, "semantic error: switch expression must be of type int", NULL);
+            }
+
             case_it = stmt->as.switch_stmt.cases;
             // check that all cases follow the rules and also the defaults
             while (case_it != NULL) {

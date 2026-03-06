@@ -213,8 +213,6 @@ void quad_emit_statement(QuadContext *ctx, const AstStatement *stmt)
 
         if (dst == AST_TYPE_FLOAT && src.type == AST_TYPE_INT)
             src = quad_to_float(ctx, src);
-        if (dst == AST_TYPE_INT && src.type == AST_TYPE_FLOAT)
-            src = quad_to_int(ctx, src);
 
         quad_emit_typed2(ctx, dst, "IASN", "RASN", id, src.place);
         return;

@@ -10,6 +10,7 @@
 #define DEFAULT_LABEL_LENGTH 64
 #define MAX_BREAK_DEPTH 128
 #define INITIAL_LABELS_CAP 10
+#define MAX_LINE_LENGTH 100
 
 typedef struct quad_value
 {

@@ -40,7 +40,6 @@ void quad_new_temp(QuadContext *ctx, char *buffer, i32 buffer_len)
     snprintf(buffer, (size_t)buffer_len, "_t%d", (int)ctx->temp_counter);
 }
 
-// TODO
 b8 quad_emitf(QuadContext *ctx, const char *fmt, ...)
 {
     va_list args;
@@ -250,7 +249,7 @@ static i32 quad_find_label(LabelEntry *labels, i32 count, const char *name)
 
 i32 quad_finalize(FILE *tmp_in, FILE *final_out)
 {
-    char line[512]; // TODO: Do we really hardcode this? 
+    char line[MAX_LINE_LENGTH];
     
     LabelEntry *labels = NULL;
     i32 cap = INITIAL_LABELS_CAP;
@@ -273,9 +272,9 @@ i32 quad_finalize(FILE *tmp_in, FILE *final_out)
     rewind(tmp_in);
     while (fgets(line, (int)sizeof(line), tmp_in) != NULL)
     {
-        char op[DEFAULT_LABEL_LENGTH] = {0};
-        char arg1[DEFAULT_LABEL_LENGTH] = {0};
-        if (sscanf(line, "%31s %63s", op, arg1) < 1) // TODO: 31 and 63 are hardcoded here and not fitting DEFAULT_LABEL_LENGTH
+        char op[32] = {0};
+        char arg1[64] = {0};
+        if (sscanf(line, "%31s %63s", op, arg1) < 1)
         {
             continue;
         }
@@ -299,12 +298,12 @@ i32 quad_finalize(FILE *tmp_in, FILE *final_out)
         }
     }
 
-    // poass 2: resolve labels in JUMP and JUMPZ instructions
+    // pass 2: resolve labels in JUMP and JUMPZ instructions
     rewind(tmp_in);
     while (fgets(line, (int)sizeof(line), tmp_in) != NULL)
     {
-        char op[DEFAULT_LABEL_LENGTH] = {0};
-        if (sscanf(line, "%31s", op) < 1) // TODO: Here too, predefined to be 31
+        char op[32] = {0};
+        if (sscanf(line, "%31s", op) < 1)
         {
             continue;
         }
@@ -338,7 +337,7 @@ i32 quad_finalize(FILE *tmp_in, FILE *final_out)
         if (strcmp(op, "JMPZ") == 0)
         {
             char target[DEFAULT_LABEL_LENGTH] = {0}, cond[DEFAULT_LABEL_LENGTH] = {0};
-            if (sscanf(line, "%31s %63s %63s", op, target, cond) == 3 && !is_number(target)) // TOOD: 3 or 2? 
+            if (sscanf(line, "%31s %63s %63s", op, target, cond) == 3 && !is_number(target))
             {
                 i32 target_line = quad_find_label(labels, count, target);
                 if (target_line < 1)

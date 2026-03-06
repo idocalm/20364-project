@@ -38,7 +38,7 @@ i32 main(i32 argc, char **argv) {
     FILE *in = NULL;
     FILE *out = NULL;
 
-    i32 rc = 1;
+    b8 delete = true;
 
     LOG(SIGNATURE);
 
@@ -83,17 +83,17 @@ i32 main(i32 argc, char **argv) {
     out = NULL;
     LOG("success: generated '%s'", output_path);
 
-    rc = 0;
+    delete = false;
 
 cleanup:
     if (out != NULL)
         fclose(out);
     if (in != NULL)
         fclose(in);
-    if (rc != 0 && output_path != NULL)
+    if (delete && output_path != NULL)
         remove(output_path);
 
     free(output_path);
 
-    return rc;
+    return (i32) delete;
 }

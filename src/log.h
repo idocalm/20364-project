@@ -6,27 +6,26 @@
 #include <stdarg.h>
 #include <string.h>
 
-/* ANSI colors */
-#define LOG_COLOR_RESET  "\x1b[0m"
-#define LOG_COLOR_RED    "\x1b[31m"
+// colors
+#define LOG_COLOR_RESET "\x1b[0m"
+#define LOG_COLOR_RED "\x1b[31m"
 #define LOG_COLOR_YELLOW "\x1b[33m"
-#define LOG_COLOR_GREEN  "\x1b[32m"
-#define LOG_COLOR_CYAN   "\x1b[36m"
+#define LOG_COLOR_GREEN "\x1b[32m"
+#define LOG_COLOR_CYAN "\x1b[36m"
 
-static inline void _log_timestamp(char *buf, size_t sz) {
+static inline void _log_timestamp(char *buf, size_t sz)
+{
     time_t t = time(NULL);
-    struct tm tmv;
-#if defined(_WIN32) // TODO
-    localtime_s(&tmv, &t);
-#else
-    struct tm *tmp = localtime(&t);
-    if (tmp != NULL) {
-        tmv = *tmp;
-    } else {
-        memset(&tmv, 0, sizeof(tmv));
+    struct tm *tmv = localtime(&t);
+
+    if (tmv != NULL)
+    {
+        strftime(buf, sz, "%Y-%m-%d %H:%M:%S", tmv);
     }
-#endif
-    strftime(buf, sz, "%Y-%m-%d %H:%M:%S", &tmv);
+    else
+    {
+        snprintf(buf, sz, "0000-00-00 00:00:00");
+    }
 }
 
 static inline void _log_print(
@@ -52,6 +51,5 @@ static inline void _log_print(
 #define DEBUG(...) _log_print(LOG_COLOR_CYAN, "DEBUG", __VA_ARGS__)
 #define WARN(...) _log_print(LOG_COLOR_YELLOW, "WARN", __VA_ARGS__)
 #define ERROR(...) _log_print(LOG_COLOR_RED, "ERROR", __VA_ARGS__)
-
 
 #endif

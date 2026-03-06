@@ -1,7 +1,7 @@
 #include "ast.h"
 
-#include <stdlib.h>
-
+// it's simpler for us to do calloc and not malloc because it'll zero 
+// fields out and we won't need to add code to do it
 static void *ast_alloc(i32 size) {
     return calloc(1, (size_t)size);
 }
@@ -15,22 +15,21 @@ AstIdentifier *new_ast_identifier(char *name) {
     }
 
     node->name = name;
+    node->tail = node;
     return node;
 }
 
 // for idlist -> idlist ',' ID, append an identifier to the end of the identifier list
 AstIdentifier *ast_identifier_append(AstIdentifier *head, AstIdentifier *node) {
-    AstIdentifier *it = head;
+    if (node == NULL) {
+        return head;
+    }
     if (head == NULL) {
         return node;
     }
 
-    // TODO: This traversal to the end is not efficient enough. Maybe track the end?
-    while (it->next != NULL) {
-        it = it->next;
-    }
-
-    it->next = node;
+    head->tail->next = node;
+    head->tail = (node->tail != NULL) ? node->tail : node;
     return head;
 }
 
@@ -55,25 +54,25 @@ AstDeclaration *new_ast_declaration(AstIdentifier *identifiers, AstType type) {
     }
     node->identifiers = identifiers;
     node->type = type;
+    node->tail = node;
     return node;
 }
 
 // for declarations -> declarations declaration. Append a new declaration node to the end
 AstDeclaration *ast_declaration_append(AstDeclaration *head, AstDeclaration *node) {
-    AstDeclaration *it = head;
+    if (node == NULL) {
+        return head;
+    }
     if (head == NULL) {
         return node;
     }
 
-    // TODO: This traversal to the end is not efficient enough. Maybe track the end?
-    while (it->next != NULL) {
-        it = it->next;
-    }
-    it->next = node;
+    head->tail->next = node;
+    head->tail = (node->tail != NULL) ? node->tail : node;
     return head;
 }
 
-// free the declaration lists (and their inner identifiers) */
+// free the declaration lists (and their inner identifiers)
 void free_ast_declaration(AstDeclaration *head) {
     AstDeclaration *next = NULL;
     while (head != NULL) {
@@ -97,7 +96,7 @@ AstExpression *new_ast_expr_id(char *identifier) {
 }
 
 // for factor -> NUM_INT, create a AST_EXPR_INT_LITERAL expression with a given number
-// we store it as text for now (TODO: Explain why)
+// we store it as text
 AstExpression *new_ast_expr_int_literal(char *number_text) {
     AstExpression *node = (AstExpression *) ast_alloc(sizeof(AstExpression));
     if (node == NULL) {
@@ -222,21 +221,21 @@ AstCase *new_ast_case(char *int_literal, AstStatement *statements) {
     }
     node->int_literal = int_literal;
     node->statements = statements;
+    node->tail = node;
     return node;
 }
 
 // for caselist -> caselist case_item, append a new case node to the list
 AstCase *ast_case_append(AstCase *head, AstCase *node) {
-    AstCase *it = head;
+    if (node == NULL) {
+        return head;
+    }
     if (head == NULL) {
         return node;
     }
 
-    // TODO: This traversal to the end is not efficient enough. Maybe track the end?
-    while (it->next != NULL) {
-        it = it->next;
-    }
-    it->next = node;
+    head->tail->next = node;
+    head->tail = (node->tail != NULL) ? node->tail : node;
     return head;
 }
 
@@ -263,6 +262,7 @@ AstStatement *new_ast_statement_assign(char *identifier, AstExpression *expressi
     node->kind = AST_STMT_ASSIGN;
     node->as.assign_stmt.identifier = identifier;
     node->as.assign_stmt.expression = expression;
+    node->tail = node;
     return node;
 }
 
@@ -275,6 +275,7 @@ AstStatement *new_ast_statement_input(char *identifier) {
     }
     node->kind = AST_STMT_INPUT;
     node->as.input_stmt.identifier = identifier;
+    node->tail = node;
     return node;
 }
 
@@ -287,6 +288,7 @@ AstStatement *new_ast_statement_output(AstExpression *expression) {
     }
     node->kind = AST_STMT_OUTPUT;
     node->as.output_stmt.expression = expression;
+    node->tail = node;
     return node;
 }
 
@@ -308,6 +310,7 @@ AstStatement *new_ast_statement_if(AstExpression *condition, AstStatement *then_
     node->as.if_stmt.condition = condition;
     node->as.if_stmt.then_stmt = then_stmt;
     node->as.if_stmt.else_stmt = else_stmt;
+    node->tail = node;
     return node;
 }
 
@@ -322,6 +325,7 @@ AstStatement *new_ast_statement_while(AstExpression *condition, AstStatement *bo
     node->kind = AST_STMT_WHILE;
     node->as.while_stmt.condition = condition;
     node->as.while_stmt.body = body;
+    node->tail = node;
     return node;
 }
 
@@ -338,6 +342,7 @@ AstStatement *new_ast_statement_switch(AstExpression *expression, AstCase *cases
     node->as.switch_stmt.expression = expression;
     node->as.switch_stmt.cases = cases;
     node->as.switch_stmt.default_statements = default_statements;
+    node->tail = node;
     return node;
 }
 
@@ -348,6 +353,7 @@ AstStatement *new_ast_statement_break(void) {
         return NULL;
     }
     node->kind = AST_STMT_BREAK;
+    node->tail = node;
     return node;
 }
 
@@ -360,21 +366,21 @@ AstStatement *new_ast_statement_block(AstStatement *statements) {
     }
     node->kind = AST_STMT_BLOCK;
     node->as.block_stmt.statements = statements;
+    node->tail = node;
     return node;
 }
 
 // for stmtlist -> stmtlist stmt
 AstStatement *ast_statement_append(AstStatement *head, AstStatement *node) {
-    AstStatement *it = head;
+    if (node == NULL) {
+        return head;
+    }
     if (head == NULL) {
         return node;
     }
 
-    // TODO: This traversal to the end is not efficient enough. Maybe track the end?
-    while (it->next != NULL) {
-        it = it->next;
-    }
-    it->next = node;
+    head->tail->next = node;
+    head->tail = (node->tail != NULL) ? node->tail : node;
     return head;
 }
 

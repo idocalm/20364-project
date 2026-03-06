@@ -2,6 +2,7 @@
 #define AST_H
 
 #include "defs.h"
+#include <stdlib.h>
 
 /* CPL scalar type tags for declarations and later semantic typing. */
 typedef enum ast_type {
@@ -25,7 +26,7 @@ typedef enum ast_binary_op {
     AST_BINOP_LE
 } AstBinaryOp;
 
-/* TODO */
+// The type of an expression
 typedef enum ast_expr_kind {
     AST_EXPR_ID,
     AST_EXPR_INT_LITERAL,
@@ -63,6 +64,7 @@ typedef struct ast_program AstProgram;
 struct ast_identifier {
     char *name;
     AstIdentifier *next;
+    AstIdentifier *tail;
 };
 
 /*
@@ -74,6 +76,7 @@ struct ast_declaration {
     AstIdentifier *identifiers;
     AstType type; // declaration type: int or float
     AstDeclaration *next;
+    AstDeclaration *tail;
 };
 
 /*
@@ -105,18 +108,15 @@ struct ast_case {
     char *int_literal; // NUM_INT
     AstStatement *statements;
     AstCase *next;
+    AstCase *tail;
 };
 
-/*
- * TODO
- * Statement node with sibling chaining via `next`.
- * Grammar origin:
- *   stmt, stmtlist, stmt_block, assignment_stmt, input_stmt, output_stmt,
- *   if_stmt, while_stmt, switch_stmt, break_stmt
- */
+// main statement object, we use a union since it can be many types
+// what decides the type in the code is the kind, so access to fields is done based on it
 struct ast_statement {
     AstStmtKind kind;
     AstStatement *next;
+    AstStatement *tail;
     union {
         struct {
             char *identifier;

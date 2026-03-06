@@ -1,7 +1,7 @@
 SHELL := /usr/bin/sh
 
 CC := gcc
-CFLAGS := -std=c11 -Wall -Wextra -Wpedantic -O2
+CFLAGS := -std=c11 -Wall -Wextra -Wpedantic
 
 FLEX := flex
 LEX_SRC := src/lexer.l
@@ -20,7 +20,7 @@ OBJ := $(patsubst src/%.c,$(OBJDIR)/%.o,$(SRC))
 
 .PHONY: all clean
 
-all: $(YACC_GEN_C) $(YACC_GEN_H) $(LEX_GEN) cpq.exe
+all: $(YACC_GEN_C) $(YACC_GEN_H) $(LEX_GEN) cpq
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
@@ -34,9 +34,9 @@ $(LEX_GEN): $(LEX_SRC) $(YACC_GEN_H)
 $(OBJDIR)/%.o: src/%.c | $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-cpq.exe: $(OBJ)
+cpq: $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $(OBJ)
 
 clean:
 	rm -rf build
-	rm -f src/lexer.yy.c src/parser.tab.c src/parser.tab.h cpq.exe
+	rm -f src/lexer.yy.c src/parser.tab.c src/parser.tab.h cpq

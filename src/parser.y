@@ -50,6 +50,7 @@ static i32 parse_error_count = 0;
 %type <binary_op> relop
 %type <case_node> caselist case_item
 
+// to not leak memory...
 %destructor { free($$); } <text>
 %destructor { free_ast_declaration($$); } <declaration>
 %destructor { free_ast_identifier($$); } <identifier>
@@ -77,7 +78,7 @@ program:
 
 declarations:
       declarations declaration { $$ = ast_declaration_append($1, $2); }
-    | /* empty */              { $$ = NULL; }
+    |                          { $$ = NULL; }
     ;
 
 declaration:
@@ -235,7 +236,7 @@ switch_stmt:
 
 caselist:
       caselist case_item { $$ = ast_case_append($1, $2); }
-    | /* empty */        { $$ = NULL; }
+    |                    { $$ = NULL; }
     ;
 
 case_item:
@@ -287,7 +288,7 @@ stmt_block:
 
 stmtlist:
       stmtlist stmt { $$ = ast_statement_append($1, $2); }
-    | /* empty */   { $$ = NULL; }
+    |               { $$ = NULL; }
     ;
 
 boolexpr:
@@ -434,8 +435,9 @@ void yyerror(const char *message) {
     i32 width = 1;
 
     if (near_text != NULL && near_text[0] != '\0') {
-        width = (i32)strlen(near_text);
+        width = (i32) strlen(near_text);
     }
+    
     width = MAX(width, 1);
 
     if (near_text != NULL && near_text[0] != '\0') {

@@ -76,9 +76,6 @@ class QuadProgram(object):
 
 
 def is_type(value, type_):
-    if PY2 and type_ is int:
-        type_ = (int, long)
-
     return isinstance(value, type_)
 
 

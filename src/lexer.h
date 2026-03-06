@@ -37,7 +37,7 @@ static inline void lexer_capture_preview(
     }
 }
 
-static inline void lexer_print_caret_line(i32 column, i32 width) {
+static inline void lexer_print_signed_line(i32 column, i32 width) {
     i32 i = 0;
     fprintf(stderr, "    ");
     for (i = 1; i < column; i++) {

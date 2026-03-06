@@ -447,7 +447,7 @@ void yyerror(const char *message) {
     }
     if (line_text != NULL) {
         fprintf(stderr, "    %s\n", line_text);
-        lexer_print_caret_line(lexer_column(), width);
+        lexer_print_signed_line(lexer_column(), width);
     }
     parse_error_count++;
 }

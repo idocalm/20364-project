@@ -33,7 +33,7 @@ static void lexer_print_highlight(i32 line, i32 column, const char *message, con
 
     ERROR("line %d:%d: lexical error: %s", (int)line, (int)column, message);
     fprintf(stderr, "    %s\n", line_preview);
-    lexer_print_caret_line(column, width);
+    lexer_print_signed_line(column, width);
 }
 
 static void lexer_report_bad_char(i8 c) {
@@ -52,6 +52,7 @@ static void lexer_report_bad_char(i8 c) {
     error_count++;
 }
 
+// we want each string to be independent, so changing one won't change all
 static char *lexer_dup_text(const char *text) {
     size_t len = strlen(text);
     char *copy = (char *)malloc(len + 1);
@@ -62,6 +63,8 @@ static char *lexer_dup_text(const char *text) {
     return copy;
 }
 
+// The YY_USER_ACTION macro is executed just before the matched rule 
+// we use it to update the token column and stores a preview of the matched text
 #define YY_USER_ACTION                                  \
     do {                                                \
         token_col = current_col;              \
